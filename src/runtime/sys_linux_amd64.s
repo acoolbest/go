@@ -40,6 +40,7 @@
 #define SYS_sched_getaffinity	204
 #define SYS_epoll_create	213
 #define SYS_exit_group		231
+#define SYS_epoll_wait		232
 #define SYS_epoll_ctl		233
 #define SYS_tgkill		234
 #define SYS_openat		257
@@ -668,7 +669,7 @@ TEXT runtime·epollwait(SB),NOSPLIT,$0
 	MOVL	nev+16(FP), DX
 	MOVL	timeout+20(FP), R10
 	MOVQ	$0, R8
-	MOVL	$SYS_epoll_pwait, AX
+	MOVL	$SYS_epoll_wait, AX
 	SYSCALL
 	MOVL	AX, ret+24(FP)
 	RET

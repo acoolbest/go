@@ -13,6 +13,25 @@ package syscall
 
 import "unsafe"
 
+const (
+    _F_SETFD = 2
+    _F_GETFL = 3
+    _F_SETFL = 4
+    _FD_CLOEXEC = SOCK_CLOEXEC
+    _O_NONBLOCK = SOCK_NONBLOCK
+)
+
+//
+func qax_closeonexec(fd int) {
+	fcntl(fd, _F_SETFD, _FD_CLOEXEC)
+}
+
+//go:nosplit
+func qax_setNonblock(fd int) {
+	flags,_ := fcntl(fd, _F_GETFL, 0)
+	fcntl(fd, _F_SETFL, flags|_O_NONBLOCK)
+}
+
 func rawSyscallNoError(trap, a1, a2, a3 uintptr) (r1, r2 uintptr)
 
 /*
@@ -538,9 +557,15 @@ func Accept(fd int) (nfd int, sa Sockaddr, err error) {
 func Accept4(fd int, flags int) (nfd int, sa Sockaddr, err error) {
 	var rsa RawSockaddrAny
 	var len _Socklen = SizeofSockaddrAny
-	nfd, err = accept4(fd, &rsa, &len, flags)
+	nfd, err = accept(fd, &rsa, &len)
 	if err != nil {
 		return
+	}
+	if flags & SOCK_CLOEXEC != 0{
+		qax_closeonexec(nfd)
+	}
+	if flags & SOCK_NONBLOCK != 0 {
+		qax_setNonblock(nfd)
 	}
 	if len > SizeofSockaddrAny {
 		panic("RawSockaddrAny too small")

@@ -193,10 +193,13 @@ func openFileNolog(name string, flag int, perm FileMode) (*File, error) {
 	var r int
 	for {
 		var e error
-		r, e = syscall.Open(name, flag|syscall.O_CLOEXEC, syscallMode(perm))
+		//r, e = syscall.Open(name, flag|syscall.O_CLOEXEC, syscallMode(perm))
+		r, e = syscall.Open(name, flag, syscallMode(perm))
 		if e == nil {
 			break
 		}
+
+		syscall.CloseOnExec(r)
 
 		// On OS X, sigaction(2) doesn't guarantee that SA_RESTART will cause
 		// open(2) to be restarted for regular files. This is easy to reproduce on

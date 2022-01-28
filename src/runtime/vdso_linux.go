@@ -205,6 +205,23 @@ func vdsoFindVersion(info *vdsoInfo, ver *vdsoVersionKey) int32 {
 	return -1 // cannot match any version
 }
 
+func isVdsoDisable() bool {
+	var proVersion = []byte("/proc/version\x00")
+	var numbuf [30]byte
+	fd := open(&proVersion[0], 0 /* O_RDONLY */, 0)
+	if fd < 0 {
+		return false
+	}
+	n := read(fd, noescape(unsafe.Pointer(&numbuf[0])), int32(len(numbuf)))
+	closefd(fd)
+	if n <= 0 {
+		return false
+	}
+	ver := slicebytetostringtmp(numbuf[:])
+	return contains(ver, "Linux version 2.6.18")
+}
+
+
 func vdsoParseSymbols(info *vdsoInfo, version int32) {
 	if !info.valid {
 		return
@@ -228,6 +245,11 @@ func vdsoParseSymbols(info *vdsoInfo, version int32) {
 
 		*k.ptr = info.loadOffset + uintptr(sym.st_value)
 		return true
+	}
+
+	// rhel5.6 2.6.18-238.el5 will use vsyscall instead of vdso
+	if isVdsoDisable() {
+		return
 	}
 
 	if !info.isGNUHash {

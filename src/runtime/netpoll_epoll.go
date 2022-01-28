@@ -23,10 +23,10 @@ var (
 )
 
 func netpollinit() {
-	epfd = epollcreate1(_EPOLL_CLOEXEC)
-	if epfd >= 0 {
-		return
-	}
+	//epfd = epollcreate1(_EPOLL_CLOEXEC)
+	//if epfd >= 0 {
+	//	return
+	//}
 	epfd = epollcreate(1024)
 	if epfd >= 0 {
 		closeonexec(epfd)

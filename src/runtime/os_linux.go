@@ -24,7 +24,8 @@ func futex(addr unsafe.Pointer, op int32, val uint32, ts, addr2 unsafe.Pointer, 
 // Futexsleep is allowed to wake up spuriously.
 
 const (
-	_FUTEX_PRIVATE_FLAG = 128
+	//_FUTEX_PRIVATE_FLAG = 128
+	_FUTEX_PRIVATE_FLAG = 0
 	_FUTEX_WAIT_PRIVATE = 0 | _FUTEX_PRIVATE_FLAG
 	_FUTEX_WAKE_PRIVATE = 1 | _FUTEX_PRIVATE_FLAG
 )
